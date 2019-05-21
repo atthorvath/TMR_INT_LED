@@ -3,6 +3,7 @@
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
+  * @author         : attila horvath
   ******************************************************************************
   * @attention
   *
@@ -14,6 +15,14 @@
   * License. You may obtain a copy of the License at:
   *                        opensource.org/licenses/BSD-3-Clause
   *
+  * @purpose
+  * Toggling LED LD2 [Green Led] while user button (blue button) is pushed down.
+  * Toggling of LED LD2 is achieved by using TIM2 respectively TIM2_IRQHandler in
+  * stm32l1xx_it.c. Prescaler of TIM2 is set to 32000 and counter period is 500
+  * thus resulting in a blinking period of 500ms.
+  * Button debouncing is achieved by ignoring the current button state as long
+  * as the number of successive button-state-samples is smaller than a given
+  * number of samples (confidenceThreshold).
   *
   ******************************************************************************
   */
@@ -95,8 +104,9 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_USART2_UART_Init();
-  /* USER CODE BEGIN 2 */
 
+  /* USER CODE BEGIN 2 */
+  /*following variables are used to debounce the user button */
   // Initialize Button Pressed Variable
   volatile char buttonPressed = 0;
   // Initialize Button Confidence Level
@@ -105,15 +115,13 @@ int main(void)
   volatile int buttonReleasedConfidenceLevel = 0;
   // Initialize Confidence threshold Level
   volatile int confidenceThreshold = 200;
-
   /* USER CODE END 2 */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+
   while (1)
   {
-    /* USER CODE END WHILE */
-
+	  /* USER CODE BEGIN WHILE */
 	  if(HAL_GPIO_ReadPin(GPIOC,B1_Pin))
 	  {
 		 if(buttonPressed == 0) // button is released
@@ -127,7 +135,7 @@ int main(void)
 			 }
 			 else
 			 {
-				//increase the buttonConfidenceLevel
+				//increase the buttonPressedConfidenceLevel
 				buttonPressedConfidenceLevel++;
 				buttonReleasedConfidenceLevel = 0;
 			 }
@@ -142,7 +150,6 @@ int main(void)
 			  {
 				  HAL_TIM_Base_Start_IT(&htim2);
 				  buttonPressed = 0;  // button is released and has settled
-
 			  }
 			  else
 			  {
@@ -152,9 +159,9 @@ int main(void)
 			  }
 		  }
 	  }
+  }/* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-  }
+  /* USER CODE BEGIN 3 */
   /* USER CODE END 3 */
 }
 
