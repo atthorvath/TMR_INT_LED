@@ -116,7 +116,7 @@ int main(void)
 
 	  if(HAL_GPIO_ReadPin(GPIOC,B1_Pin))
 	  {
-		 if(buttonPressed == 0)
+		 if(buttonPressed == 0) // button is released
 		 {
 			 // once buttonPressedConfidenceLevel has passed the confidenceThreshold
 			 if(buttonPressedConfidenceLevel > confidenceThreshold)
@@ -135,7 +135,7 @@ int main(void)
 	  }
 	  else
 	  {
-		  if(buttonPressed==1)
+		  if(buttonPressed==1) // button is pushed down
 		  {
 			  // once buttonPressedConfidenceLevel has passed the confidenceThreshold
 			  if(buttonReleasedConfidenceLevel > confidenceThreshold)
@@ -147,23 +147,11 @@ int main(void)
 			  else
 			  {
 				//increase the buttonReleasedConfidenceLevel
-				buttonReleasedConfidenceLevel ++;
+				buttonReleasedConfidenceLevel++;
 				buttonPressedConfidenceLevel = 0;
 			  }
 		  }
 	  }
-
-
-	  /*
-	  if(!HAL_GPIO_ReadPin(GPIOC,B1_Pin))
-	  {
-		  HAL_TIM_Base_Start_IT(&htim2);
-	  }else
-	  {
-		  HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_RESET);
-		  HAL_TIM_Base_Stop_IT(&htim2);
-	  }
-	  */
 
     /* USER CODE BEGIN 3 */
   }
