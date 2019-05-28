@@ -18,7 +18,7 @@
   * @purpose
   * Toggling LED LD2 [Green Led] while user button (blue button) is pushed down.
   * Toggling of LED LD2 is achieved by using TIM2 respectively TIM2_IRQHandler in
-  * stm32l1xx_it.c. Prescaler of TIM2 is set to 32000 and counter period is 500
+  * stm32l1xx_it.c. Prescaler of TIM2 is set to 31999 and counter period is 499
   * thus resulting in a blinking period of 500ms.
   * Button debouncing is achieved by ignoring the current button state as long
   * as the number of successive button-state-samples is smaller than a given
@@ -104,16 +104,15 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM2_Init();
   MX_USART2_UART_Init();
-
   /* USER CODE BEGIN 2 */
   /*following variables are used to debounce the user button */
-  // Initialize Button Pressed Variable
+  // Flag for button state
   volatile char buttonPressed = 0;
-  // Initialize Button Confidence Level
+  // Counter for button state = 1
   volatile int buttonPressedConfidenceLevel = 0;
-  // Initialize Button Released confidence Level
+  // Counter for button state = 0
   volatile int buttonReleasedConfidenceLevel = 0;
-  // Initialize Confidence threshold Level
+  // Min. number of consecutive equal button states
   volatile int confidenceThreshold = 200;
   /* USER CODE END 2 */
 
@@ -122,40 +121,39 @@ int main(void)
   while (1)
   {
 	  /* USER CODE BEGIN WHILE */
-	  if(HAL_GPIO_ReadPin(GPIOC,B1_Pin))
+	  // GPIO = high (button is released)
+	  if(HAL_GPIO_ReadPin(GPIOC,B1_Pin)) // button is active-low
 	  {
 		 if(buttonPressed == 0) // button is released
 		 {
-			 // once buttonPressedConfidenceLevel has passed the confidenceThreshold
-			 if(buttonPressedConfidenceLevel > confidenceThreshold)
+			 // button is debounced after 200 consecutive samples
+			 if(buttonReleasedConfidenceLevel > confidenceThreshold)
 			 {
 				 HAL_GPIO_WritePin(GPIOA,GPIO_PIN_5,GPIO_PIN_RESET);
 				 HAL_TIM_Base_Stop_IT(&htim2);
-				 buttonPressed = 1; // button is pressed and has settled
+				 buttonPressed = 1; // set next button state
 			 }
 			 else
 			 {
-				//increase the buttonPressedConfidenceLevel
-				buttonPressedConfidenceLevel++;
-				buttonReleasedConfidenceLevel = 0;
+				buttonReleasedConfidenceLevel++;  // count while not pressed
+				buttonPressedConfidenceLevel = 0; // reset counter
 			 }
 		 }
 	  }
-	  else
+	  else // GPIO = low (button is pressed)
 	  {
 		  if(buttonPressed==1) // button is pushed down
 		  {
-			  // once buttonPressedConfidenceLevel has passed the confidenceThreshold
-			  if(buttonReleasedConfidenceLevel > confidenceThreshold)
+			  // button is debounced after 200 consecutive samples
+			  if(buttonPressedConfidenceLevel > confidenceThreshold)
 			  {
 				  HAL_TIM_Base_Start_IT(&htim2);
-				  buttonPressed = 0;  // button is released and has settled
+				  buttonPressed = 0;  // set next button state
 			  }
 			  else
 			  {
-				//increase the buttonReleasedConfidenceLevel
-				buttonReleasedConfidenceLevel++;
-				buttonPressedConfidenceLevel = 0;
+				buttonPressedConfidenceLevel++;    // count while pressed
+				buttonReleasedConfidenceLevel = 0; // reset counter
 			  }
 		  }
 	  }
