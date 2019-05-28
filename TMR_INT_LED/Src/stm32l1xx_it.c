@@ -207,7 +207,7 @@ void TIM2_IRQHandler(void)
   /* USER CODE END TIM2_IRQn 0 */
   HAL_TIM_IRQHandler(&htim2);
   /* USER CODE BEGIN TIM2_IRQn 1 */
-  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5);
+  HAL_GPIO_TogglePin(GPIOA,GPIO_PIN_5); //toggles LED LD2 with period of 500ms
   /* USER CODE END TIM2_IRQn 1 */
 }
 
